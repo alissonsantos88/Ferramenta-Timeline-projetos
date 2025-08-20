@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferramenta de Priorização de Projetos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Linha do Tempo de Projetos</h1>
+            <p>Visualização cronológica dos projetos carregados a partir do Jira.</p>
+        </header>
+
+        <div class="filter-container">
+            <div class="filter-group">
+                <label for="filter-start-date">De:</label>
+                <input type="date" id="filter-start-date">
+            </div>
+            <div class="filter-group">
+                <label for="filter-end-date">Até:</label>
+                <input type="date" id="filter-end-date">
+            </div>
+
+            <div class="filter-group">
+                <label for="manager-filter-btn">Responsável:</label>
+                <div class="filter-dropdown">
+                    <button class="dropdown-btn" id="manager-filter-btn">Todos</button>
+                    <div class="dropdown-panel" id="manager-filter-panel"></div>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label for="status-filter-btn">Status:</label>
+                <div class="filter-dropdown">
+                    <button class="dropdown-btn" id="status-filter-btn">Todos</button>
+                    <div class="dropdown-panel" id="status-filter-panel"></div>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label for="year-filter-btn">Ano:</label>
+                <div class="filter-dropdown">
+                    <button class="dropdown-btn" id="year-filter-btn">Todos</button>
+                    <div class="dropdown-panel" id="year-filter-panel"></div>
+                </div>
+            </div>
+
+            <div class="filter-buttons">
+                <button id="apply-filters-btn">Filtrar</button>
+                <button id="clear-filters-btn">Limpar Filtros</button>
+            </div>
+        </div>
+
+        <main>
+            <div id="timeline-view">
+                <h2>Linha do Tempo dos Projetos</h2>
+                <div id="timeline-container" class="timeline-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

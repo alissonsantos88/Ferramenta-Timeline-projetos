@@ -1,0 +1,73 @@
+/* Estilos Gerais */
+body { font-family: Arial, sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; margin: 0; padding: 20px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+header { text-align: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
+h1, h2 { color: #0056b3; }
+
+/* --- Estilos da Barra de Filtros --- */
+.filter-container { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; padding: 15px; background-color: #eef5ff; border-radius: 8px; margin-bottom: 20px; }
+.filter-group { display: flex; flex-direction: column; }
+.filter-group label { font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #333; }
+.filter-group input[type="date"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+.filter-buttons button { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; transition: background-color 0.2s; }
+#apply-filters-btn { background-color: #28a745; color: white; }
+#clear-filters-btn { background-color: #6c757d; color: white; margin-left: 5px; }
+
+/* --- Estilos para Filtros Múltiplos (Checkboxes) --- */
+.filter-dropdown { position: relative; display: inline-block; }
+.dropdown-btn { background-color: white; padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; text-align: left; }
+.dropdown-btn::after { content: ' ▼'; float: right; font-size: 10px; margin-left: 10px; }
+.dropdown-panel { display: none; position: absolute; background-color: #f9f9f9; min-width: 100%; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); border: 1px solid #ddd; border-radius: 4px; z-index: 10; max-height: 200px; overflow-y: auto; }
+.dropdown-panel.show { display: block; }
+.dropdown-panel label { color: black; padding: 8px 12px; text-decoration: none; display: block; cursor: pointer; font-size: 14px; font-weight: normal; white-space: nowrap; }
+.dropdown-panel label:hover { background-color: #f1f1f1; }
+.dropdown-panel input[type="checkbox"] { margin-right: 8px; }
+
+/* --- Estilos da Linha do Tempo --- */
+.timeline-container { overflow-x: auto; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px;}
+.timeline-months { position: sticky; top: 0; z-index: 2; background-color: #e9ecef; }
+.months-grid { display: flex; }
+.month { text-align: center; padding: 10px; border-right: 1px dashed #ccc; font-size: 12px; font-weight: bold; box-sizing: border-box; }
+.timeline-grid { position: relative; }
+.project-bars { display: grid; grid-auto-rows: 50px; }
+.timeline-row { grid-column: 1 / -1; position: relative; }
+.bar-background { border-top: 1px solid #eee; height: 100%; }
+.bar-element { position: absolute; height: 30px; top: 10px; background-color: #007bff; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.bar-label { position: absolute; top: 10px; height: 30px; display: flex; align-items: center; font-size: 12px; white-space: nowrap; pointer-events: none; }
+.bar-label-inside { color: white; padding: 0 10px; justify-content: center; width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.bar-label-outside { color: #0056b3; padding-left: 5px; }
+.manager-icon { position: absolute; top: 16px; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; color: white; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255, 255, 255, 0.5); box-shadow: 0 1px 3px rgba(0,0,0,0.2); z-index: 3; }
+
+/* --- Estilo para o Marcador de Hoje --- */
+.today-marker { position: absolute; top: 0; height: 100%; width: 2px; background-color: #FF8C00; z-index: 5; }
+.today-marker::after { content: 'Hoje'; position: absolute; top: -20px; left: -15px; background-color: #FF8C00; color: white; padding: 2px 5px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+
+/* Medidor de texto invisível */
+.text-measurer { position: absolute; visibility: hidden; height: auto; width: auto; white-space: nowrap; font-size: 12px; }
+
+/* --- Estilos de Cores por Status do Projeto (COM PLURAIS CORRIGIDOS) --- */
+.status-em-andamento .bar-element {
+    background-color: #007bff; /* Azul (Padrão) */
+}
+.status-backlog .bar-element {
+    background-color: #6c757d; /* Cinza Escuro */
+}
+.status-priorizados .bar-element {
+    background-color: #ffc107; /* Laranja/Ambar */
+}
+.status-concluidos .bar-element,
+.status-fechados .bar-element {
+    background-color: #28a745; /* Verde */
+}
+.status-stand-by .bar-element {
+    background-color: #fff3cd; /* Amarelo Claro */
+}
+.status-stand-by .bar-label-inside, .status-stand-by .bar-label-outside {
+    color: #343a40;
+}
+.status-cancelados .bar-element {
+    background-color: #f8d7da; /* Vermelho Claro */
+}
+.status-cancelados .bar-label-inside, .status-cancelados .bar-label-outside {
+    color: #343a40;
+}
