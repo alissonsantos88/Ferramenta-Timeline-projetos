@@ -10,9 +10,16 @@
 
     <div class="container">
         <header>
+            <img src="images/LOGOWS_Nova.png" alt="Logo Wilson Sons" class="header-logo">
+            
             <h1>Linha do Tempo de Projetos</h1>
             <p>Visualização cronológica dos projetos carregados a partir do Jira.</p>
         </header>
+
+        <div class="year-filter-container">
+            <span class="year-filter-label">Filtrar por Ano:</span>
+            <div id="year-filter-options" class="year-filter-options"></div>
+        </div>
 
         <div class="filter-container">
             <div class="filter-group">
@@ -23,7 +30,6 @@
                 <label for="filter-end-date">Até:</label>
                 <input type="date" id="filter-end-date">
             </div>
-
             <div class="filter-group">
                 <label for="manager-filter-btn">Responsável:</label>
                 <div class="filter-dropdown">
@@ -31,7 +37,6 @@
                     <div class="dropdown-panel" id="manager-filter-panel"></div>
                 </div>
             </div>
-
             <div class="filter-group">
                 <label for="status-filter-btn">Status:</label>
                 <div class="filter-dropdown">
@@ -39,18 +44,13 @@
                     <div class="dropdown-panel" id="status-filter-panel"></div>
                 </div>
             </div>
-
-            <div class="filter-group">
-                <label for="year-filter-btn">Ano:</label>
-                <div class="filter-dropdown">
-                    <button class="dropdown-btn" id="year-filter-btn">Todos</button>
-                    <div class="dropdown-panel" id="year-filter-panel"></div>
-                </div>
-            </div>
-
             <div class="filter-buttons">
                 <button id="apply-filters-btn">Filtrar</button>
                 <button id="clear-filters-btn">Limpar Filtros</button>
+            </div>
+            <div class="view-option-group">
+                <input type="checkbox" id="group-by-manager-checkbox">
+                <label for="group-by-manager-checkbox">Agrupar por Responsável</label>
             </div>
         </div>
 
