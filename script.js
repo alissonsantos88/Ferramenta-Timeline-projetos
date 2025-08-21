@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQniCPkmq4_ulsrLazTWhWv9-bcziIJwAwRz73EesRu0nTSjxqgEjMNJ1c_8QBsEUJsvMuSDLjc9at-/pub?output=csv';
 
-    // --- Seleção de Elementos ---
     const timelineContainer = document.getElementById('timeline-container');
     const filterStartDate = document.getElementById('filter-start-date');
     const filterEndDate = document.getElementById('filter-end-date');
@@ -9,90 +8,58 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearFiltersBtn = document.getElementById('clear-filters-btn');
     const managerFilterPanel = document.getElementById('manager-filter-panel');
     const statusFilterPanel = document.getElementById('status-filter-panel');
+    const yearFilterOptionsContainer = document.getElementById('year-filter-options');
     const managerFilterBtn = document.getElementById('manager-filter-btn');
     const statusFilterBtn = document.getElementById('status-filter-btn');
     const textMeasurer = document.createElement('div');
     textMeasurer.className = 'text-measurer';
     document.body.appendChild(textMeasurer);
     const groupByManagerCheckbox = document.getElementById('group-by-manager-checkbox');
-    const yearFilterOptionsContainer = document.getElementById('year-filter-options');
+    const toggleFiltersBtn = document.getElementById('toggle-filters-btn');
+    const allFiltersPanel = document.getElementById('all-filters-panel');
     let allProjects = [];
 
-    // --- Funções Ajudantes (sem alterações) ---
-    function parseBrazilianDate(dateStr) { /* ... */ }
-    function parseCsvLine(line) { /* ... */ }
-    function getManagerIcon(name) { /* ... */ }
-    function generateStatusClass(status) { /* ... */ }
-    
-    // --- Lógica de UI para os Dropdowns (sem alterações) ---
-    function setupDropdowns() { /* ... */ }
-    function closeAllDropdowns() { /* ... */ }
-
-    // --- Funções de Renderização e Filtros ---
-    function populateFilters() {
-        const managers = [...new Set(allProjects.map(p => p.manager).filter(Boolean))].sort();
-        const statuses = [...new Set(allProjects.map(p => p.status).filter(Boolean))].sort();
-        const years = [...new Set(allProjects.map(p => p.ano).filter(Boolean))].sort((a, b) => b - a);
-        
-        managerFilterPanel.innerHTML = '';
-        statusFilterPanel.innerHTML = '';
-        yearFilterOptionsContainer.innerHTML = '';
-
-        const createCheckbox = (value, name, panel) => {
-            const label = document.createElement('label');
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.name = name;
-            checkbox.value = value;
-            label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(` ${value}`));
-            panel.appendChild(label);
-        };
-        
-        managers.forEach(m => createCheckbox(m, 'manager', managerFilterPanel));
-        statuses.forEach(s => createCheckbox(s, 'status', statusFilterPanel));
-        years.forEach(y => createCheckbox(y, 'year', yearFilterOptionsContainer));
-        
-        // **MUDANÇA AQUI**: Adiciona um "ouvinte" a cada checkbox de ano
-        document.querySelectorAll('#year-filter-options input[type="checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('change', applyFilters);
-        });
-
-        const adjustWidth = (panel, button) => {
-            panel.style.display = 'block';
-            panel.style.visibility = 'hidden';
-            panel.style.position = 'absolute';
-            const panelWidth = panel.scrollWidth;
-            button.style.width = `${panelWidth + 30}px`;
-            panel.style.display = '';
-            panel.style.visibility = '';
-            panel.style.position = '';
-        };
-
-        adjustWidth(managerFilterPanel, managerFilterBtn);
-        adjustWidth(statusFilterPanel, statusFilterBtn);
-    }
-    
-    function applyFilters() { /* ...código não muda... */ }
-    function renderTimelineView(projectsToRender) { /* ...código não muda... */ }
-    
-    // --- Lógica de Eventos e Inicialização ---
-    // (A lógica de limpar filtros também já inclui os filtros de ano, sem precisar de mudanças)
-    clearFiltersBtn.addEventListener('click', () => { /* ...código não muda... */ });
-    applyFiltersBtn.addEventListener('click', applyFilters);
-    groupByManagerCheckbox.addEventListener('change', applyFilters);
-    
-    async function loadProjectsFromSheet() { /* ...código não muda... */ }
-    setupDropdowns();
-    loadProjectsFromSheet();
-
-    // Cole o código completo das funções que não mudaram para manter tudo funcional
     function parseBrazilianDate(dateStr) { if (!dateStr || typeof dateStr !== 'string') return null; const parts = dateStr.split('/'); if (parts.length !== 3) return null; const day = parseInt(parts[0], 10); const month = parseInt(parts[1], 10) - 1; const year = parseInt(parts[2], 10); if (isNaN(day) || isNaN(month) || isNaN(year)) return null; const date = new Date(year, month, day); if (date.getFullYear() !== year || date.getMonth() !== month || date.getDate() !== day) { return null; } return date; }
     function parseCsvLine(line) { const result = []; let current = ''; let inQuotes = false; for (let i = 0; i < line.length; i++) { const char = line[i]; if (char === '"' && (i === 0 || line[i-1] !== '\\')) { inQuotes = !inQuotes; } else if (char === ',' && !inQuotes) { result.push(current.replace(/^"|"$/g, '').trim()); current = ''; } else { current += char; } } result.push(current.replace(/^"|"$/g, '').trim()); return result; }
     function getManagerIcon(name) { if (!name || name === 'Não definido') return ''; const getInitials = (fullName) => { const names = fullName.split(' '); if (names.length === 1) return names[0].substring(0, 2).toUpperCase(); return (names[0][0] + names[names.length - 1][0]).toUpperCase(); }; const generateColor = (str) => { let hash = 0; for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); } const h = hash % 360; return `hsl(${h}, 60%, 45%)`; }; const initials = getInitials(name); const color = generateColor(name); return `<div class="manager-icon" style="background-color: ${color};" title="${name}">${initials}</div>`; }
     function generateStatusClass(status) { if (!status) return ''; const normalizedStatus = status.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); return `status-${normalizedStatus.replace(/\s+/g, '-')}`; }
-    function setupDropdowns() { [managerFilterBtn, statusFilterBtn].forEach(btn => { btn.addEventListener('click', (event) => { event.stopPropagation(); closeAllDropdowns(); btn.nextElementSibling.classList.toggle('show'); }); }); window.addEventListener('click', (event) => { if (!event.target.matches('.dropdown-btn')) { closeAllDropdowns(); } }); }
+    
+    function setupDropdowns() {
+        [managerFilterBtn, statusFilterBtn].forEach(btn => {
+            btn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                closeAllDropdowns();
+                btn.nextElementSibling.classList.toggle('show');
+            });
+        });
+        window.addEventListener('click', (event) => { if (!event.target.matches('.dropdown-btn')) { closeAllDropdowns(); } });
+    }
     function closeAllDropdowns() { [managerFilterPanel, statusFilterPanel].forEach(panel => { panel.classList.remove('show'); }); }
+
+    toggleFiltersBtn.addEventListener('click', () => {
+        allFiltersPanel.classList.toggle('show');
+        if (allFiltersPanel.classList.contains('show')) {
+            toggleFiltersBtn.textContent = 'Ocultar Filtros';
+        } else {
+            toggleFiltersBtn.textContent = 'Mostrar Filtros';
+        }
+    });
+
+    function populateFilters() {
+        const managers = [...new Set(allProjects.map(p => p.manager).filter(Boolean))].sort();
+        const statuses = [...new Set(allProjects.map(p => p.status).filter(Boolean))].sort();
+        const years = [...new Set(allProjects.map(p => p.ano).filter(Boolean))].sort((a, b) => b - a);
+        managerFilterPanel.innerHTML = ''; statusFilterPanel.innerHTML = ''; yearFilterOptionsContainer.innerHTML = '';
+        const createCheckbox = (value, name, panel) => { const label = document.createElement('label'); const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.name = name; checkbox.value = value; label.appendChild(checkbox); label.appendChild(document.createTextNode(` ${value}`)); panel.appendChild(label); };
+        managers.forEach(m => createCheckbox(m, 'manager', managerFilterPanel));
+        statuses.forEach(s => createCheckbox(s, 'status', statusFilterPanel));
+        years.forEach(y => createCheckbox(y, 'year', yearFilterOptionsContainer));
+        document.querySelectorAll('#year-filter-options input[type="checkbox"]').forEach(checkbox => { checkbox.addEventListener('change', applyFilters); });
+        const adjustWidth = (panel, button) => { panel.style.display = 'block'; panel.style.visibility = 'hidden'; panel.style.position = 'absolute'; const panelWidth = panel.scrollWidth; button.style.width = `${panelWidth + 30}px`; panel.style.display = ''; panel.style.visibility = ''; panel.style.position = ''; };
+        adjustWidth(managerFilterPanel, managerFilterBtn);
+        adjustWidth(statusFilterPanel, statusFilterBtn);
+    }
+    
     function applyFilters() {
         const startDateValue = filterStartDate.value; const endDateValue = filterEndDate.value;
         const selectedManagers = Array.from(document.querySelectorAll('input[name="manager"]:checked')).map(cb => cb.value);
@@ -106,10 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTimelineView(filteredProjects);
         closeAllDropdowns();
     }
+    
     function renderTimelineView(projectsToRender) {
         timelineContainer.innerHTML = '';
         const validProjects = projectsToRender.filter(p => p.startDate && p.endDate && !isNaN(p.startDate.getTime()));
-        if (validProjects.length === 0) { timelineContainer.innerHTML = '<p>Nenhum projeto encontrado com os filtros selecionados.</p>'; return; }
+        if (validProjects.length === 0) { timelineContainer.innerHTML = '<p style="color: #333;">Nenhum projeto encontrado com os filtros selecionados.</p>'; return; }
         const isGroupingEnabled = groupByManagerCheckbox.checked;
         let minDate, maxDate;
         const filterStartValue = filterStartDate.value;
@@ -182,17 +150,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (gridContainer) { gridContainer.appendChild(marker); }
         }
     }
+    
     clearFiltersBtn.addEventListener('click', () => {
         filterStartDate.value = ''; filterEndDate.value = '';
-        document.querySelectorAll('.filter-dropdown input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('.dropdown-panel input[type="checkbox"]').forEach(cb => cb.checked = false);
         document.querySelectorAll('#year-filter-options input[type="checkbox"]').forEach(cb => cb.checked = false);
         groupByManagerCheckbox.checked = false;
         renderTimelineView(allProjects);
     });
     applyFiltersBtn.addEventListener('click', applyFilters);
     groupByManagerCheckbox.addEventListener('change', applyFilters);
+
     async function loadProjectsFromSheet() {
-        timelineContainer.innerHTML = '<p>A carregar projetos da planilha...</p>';
+        timelineContainer.innerHTML = '<p style="color: #333;">A carregar projetos da planilha...</p>';
         try {
             const response = await fetch(googleSheetUrl);
             if (!response.ok) throw new Error('Falha ao carregar a planilha.');
@@ -216,7 +186,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('ERRO CRÍTICO DURANTE O CARREGAMENTO:', error);
-            timelineContainer.innerHTML = `<p style="color: red;">Erro ao carregar projetos. Verifique a consola (F12) para detalhes.</p>`;
+            timelineContainer.innerHTML = `<p style="color: #dc3545;">Erro ao carregar projetos. Verifique a consola (F12) para detalhes.</p>`;
         }
     }
+    
+    setupDropdowns();
+    loadProjectsFromSheet();
 });

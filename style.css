@@ -1,63 +1,54 @@
 /* Estilos Gerais */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #0A2240; /* MUDANÇA: Fundo Azul Escuro */
-    color: #f1f1f1; /* MUDANÇA: Cor do texto principal para cinza claro */
-    line-height: 1.6;
-    margin: 0;
-    padding: 20px;
-}
-.container { max-width: 95%; margin: 0 auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); color: #333; /* Cor do texto dentro do container volta a ser escura */ }
-header {
-    text-align: center;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
-    position: relative; /* MUDANÇA: Necessário para posicionar a logo */
-}
+body { font-family: Arial, sans-serif; background-color: #0A2240; color: #333; line-height: 1.6; margin: 0; padding: 20px; }
+.container { max-width: 95%; margin: 0 auto; padding: 20px 40px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); color: #333; }
+header { text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; position: relative; }
 h1, h2 { color: #0056b3; }
+header p { color: #6c757d; }
 
-/* --- Estilos da Barra de Filtros (sem alterações) --- */
-.filter-container { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; padding: 15px; background-color: #eef5ff; border-radius: 8px; margin-bottom: 20px; }
+/* --- Estilos do Painel de Filtros Retrátil --- */
+.toggle-filters-container { text-align: right; margin-bottom: 15px; }
+#toggle-filters-btn { background-color: #f8f9fa; color: #333; border: 1px solid #ddd; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+#toggle-filters-btn:hover { background-color: #e2e6ea; }
+#all-filters-panel { display: none; padding-bottom: 20px; }
+#all-filters-panel.show { display: block; }
+
+/* --- Estilos da Barra de Filtros --- */
+.filter-container, .year-filter-container { background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+.filter-container { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
+.year-filter-container { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
 .filter-group { display: flex; flex-direction: column; }
-.filter-group label { font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #333; }
-.filter-group input[type="date"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-.filter-buttons button { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; transition: background-color 0.2s; }
+.filter-group label, .year-filter-label, .view-option-group label { font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #333; }
+.filter-group input[type="date"], .dropdown-btn { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; font-family: inherit; }
+.filter-buttons button { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; transition: background-color 0.2s; font-family: inherit; }
 #apply-filters-btn { background-color: #28a745; color: white; }
 #clear-filters-btn { background-color: #6c757d; color: white; margin-left: 5px; }
+.year-filter-options { display: flex; gap: 15px; }
+.year-filter-options label, .view-option-group label { font-size: 14px; display: flex; align-items: center; cursor: pointer; }
+.year-filter-options input[type="checkbox"], .view-option-group input[type="checkbox"] { margin-right: 5px; cursor: pointer; }
 
-/* ... (O resto do CSS continua igual até ao final) ... */
+/* --- Estilos para Filtros Múltiplos (Checkboxes) --- */
 .filter-dropdown { position: relative; display: inline-block; }
-.dropdown-btn { background-color: white; padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; text-align: left; }
+.dropdown-btn { background-color: white; text-align: left; }
 .dropdown-btn::after { content: ' ▼'; float: right; font-size: 10px; margin-left: 10px; }
 .dropdown-panel { display: none; position: absolute; background-color: #f9f9f9; min-width: 100%; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); border: 1px solid #ddd; border-radius: 4px; z-index: 10; max-height: 200px; overflow-y: auto; }
 .dropdown-panel.show { display: block; }
-.dropdown-panel label { color: black; padding: 8px 12px; text-decoration: none; display: block; cursor: pointer; font-size: 14px; font-weight: normal; white-space: nowrap; }
-.dropdown-panel label:hover { background-color: #f1f1f1; }
+.dropdown-panel label { color: black; padding: 8px 12px; display: block; cursor: pointer; font-size: 14px; font-weight: normal; white-space: nowrap; }
+.dropdown-panel label:hover { background-color: #dddddd; }
 .dropdown-panel input[type="checkbox"] { margin-right: 8px; }
-.view-option-group { display: flex; align-items: center; padding-top: 15px; margin-left: 20px; border-left: 1px solid #ddd; padding-left: 20px; }
-.view-option-group label { font-size: 14px; margin-left: 8px; cursor: pointer; color: #333; }
-.view-option-group input[type="checkbox"] { cursor: pointer; }
-.year-filter-container { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; padding: 10px 15px; margin-bottom: 20px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; }
-.year-filter-label { font-weight: bold; font-size: 14px; color: #333; }
-.year-filter-options { display: flex; gap: 15px; }
-.year-filter-options label { font-size: 14px; display: flex; align-items: center; cursor: pointer; }
-.year-filter-options input[type="checkbox"] { margin-right: 5px; cursor: pointer; }
 
-/* --- Estilos da Linha do Tempo --- */
-.timeline-container { overflow-x: auto; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px;}
-/* ... (todo o resto do CSS permanece o mesmo) ... */
-.timeline-months { position: sticky; top: 0; z-index: 2; background-color: #e9ecef; }
+/* --- Estilos da Linha do Tempo (COM TEMA ESCURO) --- */
+.timeline-container { overflow-x: auto; padding: 10px; background-color: #0A2240; border: 1px solid #2c3e50; border-radius: 8px;}
+.timeline-months { position: sticky; top: 0; z-index: 2; background-color: #1c2b4a; }
 .months-grid { display: flex; }
-.month { text-align: center; padding: 10px; border-right: 1px dashed #ccc; font-size: 12px; font-weight: bold; box-sizing: border-box; flex-shrink: 0; }
+.month { text-align: center; padding: 10px; border-right: 1px dashed #2c3e50; font-size: 12px; font-weight: bold; box-sizing: border-box; flex-shrink: 0; color: #f1f1f1; }
 .timeline-grid { position: relative; }
 .project-bars { display: grid; grid-auto-rows: 50px; }
 .timeline-row { grid-column: 1 / -1; position: relative; }
-.bar-background { border-top: 1px solid #eee; height: 100%; }
-.bar-element { position: absolute; height: 30px; top: 10px; background-color: #007bff; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.bar-background { border-top: 1px solid #2c3e50; height: 100%; }
+.bar-element { position: absolute; height: 30px; top: 10px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .bar-label { position: absolute; top: 10px; height: 30px; display: flex; align-items: center; font-size: 12px; white-space: nowrap; pointer-events: none; }
 .bar-label-inside { color: white; padding: 0 10px; justify-content: center; width: 100%; overflow: hidden; text-overflow: ellipsis; }
-.bar-label-outside { color: #0056b3; padding-left: 5px; }
+.bar-label-outside { color: #f1f1f1; padding-left: 5px; }
 .manager-icon { position: absolute; top: 16px; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; color: white; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255, 255, 255, 0.5); box-shadow: 0 1px 3px rgba(0,0,0,0.2); z-index: 3; }
 .today-marker { position: absolute; top: 0; height: 100%; width: 2px; background-color: #FF8C00; z-index: 5; }
 .today-marker::after { content: 'Hoje'; position: absolute; top: -20px; left: -15px; background-color: #FF8C00; color: white; padding: 2px 5px; border-radius: 3px; font-size: 10px; font-weight: bold; }
@@ -68,14 +59,7 @@ h1, h2 { color: #0056b3; }
 .status-concluidos .bar-element, .status-fechados .bar-element { background-color: #28a745; }
 .status-stand-by .bar-element { background-color: #fff3cd; }
 .status-stand-by .bar-label-inside, .status-stand-by .bar-label-outside { color: #343a40; }
-.status-cancelados .bar-element { background-color: #f8d7da; }
-.status-cancelados .bar-label-inside, .status-cancelados .bar-label-outside { color: #343a40; }
-.timeline-group-header { grid-column: 1 / -1; display: flex; align-items: center; background-color: #eef5ff; font-weight: bold; font-size: 14px; padding: 8px 15px; color: #0056b3; border-top: 2px solid #b1d3ff; border-bottom: 1px solid #b1d3ff; box-sizing: border-box; }
-
-/* NOVO: Estilo para a Logo */
-.header-logo {
-    position: absolute;
-    top: 20px;
-    right: 25px;
-    max-height: 60px; /* Define a altura máxima, a largura ajusta-se proporcionalmente */
-}
+.status-cancelado .bar-element { background-color: #f8d7da; }
+.status-cancelado .bar-label-inside, .status-cancelado .bar-label-outside { color: #343a40; }
+.timeline-group-header { grid-column: 1 / -1; display: flex; align-items: center; background-color: #1c2b4a; font-weight: bold; font-size: 14px; padding: 8px 15px; color: #f1f1f1; border-top: 2px solid #2c3e50; border-bottom: 1px solid #2c3e50; box-sizing: border-box; }
+.header-logo { position: absolute; top: 20px; right: 25px; max-height: 60px; }
