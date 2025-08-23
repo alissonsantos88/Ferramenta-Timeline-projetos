@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ferramenta de Priorização de Projetos</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
 </head>
 <body>
 
@@ -15,16 +16,19 @@
             <p>Visualização cronológica dos projetos carregados a partir do Jira.</p>
         </header>
 
-        <div class="toggle-filters-container">
-            <button id="toggle-filters-btn">Ocultar Filtros</button>
+        <div class="main-actions-container">
+            <button id="edit-mode-btn">Entrar em Modo de Edição</button>
         </div>
 
-        <div id="all-filters-panel" class="show">
+        <div class="toggle-filters-container">
+            <button id="toggle-filters-btn">Mostrar Filtros</button>
+        </div>
+
+        <div id="all-filters-panel">
             <div class="year-filter-container">
                 <span class="year-filter-label">Filtrar por Ano:</span>
                 <div id="year-filter-options" class="year-filter-options"></div>
             </div>
-
             <div class="filter-container">
                 <div class="filter-group">
                     <label for="filter-start-date">De:</label>
@@ -49,12 +53,13 @@
                     </div>
                 </div>
                 <div class="filter-buttons">
-                    <button id="apply-filters-btn">Filtrar</button>
                     <button id="clear-filters-btn">Limpar Filtros</button>
                 </div>
                 <div class="view-option-group">
                     <input type="checkbox" id="group-by-manager-checkbox">
                     <label for="group-by-manager-checkbox">Agrupar por Responsável</label>
+                    <input type="checkbox" id="sort-by-date-checkbox" checked>
+                    <label for="sort-by-date-checkbox">Ordenar por Data</label>
                 </div>
             </div>
         </div>
