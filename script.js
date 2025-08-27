@@ -57,14 +57,14 @@ document.addEventListener('DOMContentLoaded', () => {
         container.classList.toggle('edit-mode-active');
         if (isEditMode) {
             editModeBtn.textContent = 'Sair do Modo de Edição';
-            const saveBtn = document.createElement('a');
+            const saveBtn = document.createElement('a'); // MUDANÇA: Criamos um link <a>
             saveBtn.id = 'save-changes-btn';
             saveBtn.textContent = 'Salvar Alterações';
             saveBtn.href = "#";
             mainActionsContainer.appendChild(saveBtn);
             saveBtn.addEventListener('click', (event) => {
-                const changes = findChanges();
-                if (changes.length === 0) {
+                const changesReport = findChanges();
+                if (!changesReport) {
                     alert("Nenhuma alteração foi detetada para salvar.");
                     event.preventDefault();
                     return;
@@ -72,9 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const reportTitle = "Relatório de Alterações - Linha do Tempo de Projetos";
                 const emailTo = 'substitua.pelo.email@desejado.com';
                 const subject = encodeURIComponent(reportTitle);
-                let body = "Olá,\n\nSeguem as alterações realizadas na linha do tempo dos projetos para atualização no Jira:\n\n";
+                let body = "Olá,\n\nSeguem as alterações realizadas na linha do tempo para atualização no Jira:\n\n";
                 body += "--------------------------------------\n\n";
-                body += changes.join('\n\n--------------------------------------\n\n');
+                body += changesReport;
                 const encodedBody = encodeURIComponent(body);
                 saveBtn.href = `mailto:${emailTo}?subject=${subject}&body=${encodedBody}`;
             });
@@ -102,42 +102,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (current) {
                 const changesForProject = [];
                 if (formatDate(original.startDate) !== formatDate(current.startDate) || formatDate(original.endDate) !== formatDate(current.endDate)) {
-                    changesForProject.push(
-                        `  Como era (Datas): ${formatDate(original.startDate)} a ${formatDate(original.endDate)}\n` +
-                        `  Como ficou (Datas): ${formatDate(current.startDate)} a ${formatDate(current.endDate)}`
-                    );
+                    changesForProject.push(`  Como era (Datas): ${formatDate(original.startDate)} a ${formatDate(original.endDate)}\n  Como ficou (Datas): ${formatDate(current.startDate)} a ${formatDate(current.endDate)}`);
                 }
                 if (original.manager !== current.manager) {
-                    changesForProject.push(
-                        `  Como era (Responsável): ${original.manager}\n` +
-                        `  Como ficou (Responsável): ${current.manager}`
-                    );
+                    changesForProject.push(`  Como era (Responsável): ${original.manager}\n  Como ficou (Responsável): ${current.manager}`);
                 }
                 if (changesForProject.length > 0) {
                     changes.push(`Projeto: ${original.name}\n${changesForProject.join('\n')}`);
                 }
             }
         }
-        return changes;
+        return changes.length > 0 ? changes.join('\n\n--------------------------------------\n\n') : null;
     }
 
     function setupInteractions() {
         interact('.timeline-row').draggable({
             listeners: {
-                start (event) {
-                    if (!isEditMode) return;
-                    const allVisualElements = event.target.querySelectorAll('.bar-element, .bar-label, .manager-icon-container');
-                    allVisualElements.forEach(el => el.setAttribute('data-x', 0));
-                },
-                move (event) {
-                    if (!isEditMode) return;
-                    const allVisualElements = event.target.querySelectorAll('.bar-element, .bar-label, .manager-icon-container');
-                    allVisualElements.forEach(el => {
-                        const x = (parseFloat(el.getAttribute('data-x')) || 0) + event.dx;
-                        el.style.transform = `translateX(${x}px)`;
-                        el.setAttribute('data-x', x);
-                    });
-                },
+                start (event) { if (!isEditMode) return; const allVisualElements = event.target.querySelectorAll('.bar-element, .bar-label, .manager-icon-container'); allVisualElements.forEach(el => el.setAttribute('data-x', 0)); },
+                move (event) { if (!isEditMode) return; const allVisualElements = event.target.querySelectorAll('.bar-element, .bar-label, .manager-icon-container'); allVisualElements.forEach(el => { const x = (parseFloat(el.getAttribute('data-x')) || 0) + event.dx; el.style.transform = `translateX(${x}px)`; el.setAttribute('data-x', x); }); },
                 end (event) {
                     if (!isEditMode) return;
                     const projectName = event.target.dataset.projectName;
@@ -159,19 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
         interact('.bar-element').resizable({
             edges: { left: true, right: true },
             listeners: {
-                start (event) {
-                    if (!isEditMode) return;
-                    event.target.setAttribute('data-x', 0);
-                },
-                move(event) {
-                    if (!isEditMode) return;
-                    const target = event.target;
-                    let x = parseFloat(target.getAttribute('data-x')) || 0;
-                    target.style.width = `${event.rect.width}px`;
-                    x += event.deltaRect.left;
-                    target.style.transform = `translateX(${x}px)`;
-                    target.setAttribute('data-x', x);
-                },
+                start (event) { if (!isEditMode) return; event.target.setAttribute('data-x', 0); },
+                move(event) { if (!isEditMode) return; const target = event.target; let x = parseFloat(target.getAttribute('data-x')) || 0; target.style.width = `${event.rect.width}px`; x += event.deltaRect.left; target.style.transform = `translateX(${x}px)`; target.setAttribute('data-x', x); },
                 end(event) {
                     if (!isEditMode) return;
                     const barContent = event.target;
@@ -341,15 +312,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    document.querySelectorAll('input[type="date"], input[type="checkbox"]').forEach(input => {
+        input.addEventListener('change', applyFilters);
+    });
     clearFiltersBtn.addEventListener('click', () => {
         filterStartDate.value = ''; filterEndDate.value = '';
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
         groupByManagerCheckbox.checked = false;
         sortByDateCheckbox.checked = true;
         applyFilters();
-    });
-    document.querySelectorAll('input[type="date"], input[type="checkbox"]').forEach(input => {
-        input.addEventListener('change', applyFilters);
     });
 
     async function loadProjectsFromSheet() {
