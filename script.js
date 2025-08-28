@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQniCPkmq4_ulsrLazTWhWv9-bcziIJwAwRz73EesRu0nTSjxqgEjMNJ1c_8QBsEUJsvMuSDLjc9at-/pub?output=csv';
 
+    // --- Seleção de Elementos ---
     const container = document.querySelector('.container');
     const mainActionsContainer = document.querySelector('.main-actions-container');
     const editModeBtn = document.getElementById('edit-mode-btn');
@@ -21,16 +22,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleFiltersBtn = document.getElementById('toggle-filters-btn');
     const allFiltersPanel = document.getElementById('all-filters-panel');
 
+    // --- Variáveis de Estado ---
     let allProjects = [];
     let originalProjects = [];
     let isEditMode = false;
     const PIXELS_PER_DAY = 3;
 
+    // --- Funções Ajudantes ---
     function parseBrazilianDate(dateStr) { if (!dateStr || typeof dateStr !== 'string') return null; const parts = dateStr.split('/'); if (parts.length !== 3) return null; const day = parseInt(parts[0], 10); const month = parseInt(parts[1], 10) - 1; const year = parseInt(parts[2], 10); if (isNaN(day) || isNaN(month) || isNaN(year)) return null; const date = new Date(year, month, day); if (date.getFullYear() !== year || date.getMonth() !== month || date.getDate() !== day) { return null; } return date; }
     function parseCsvLine(line) { const result = []; let current = ''; let inQuotes = false; for (let i = 0; i < line.length; i++) { const char = line[i]; if (char === '"' && (i === 0 || line[i-1] !== '\\')) { inQuotes = !inQuotes; } else if (char === ',' && !inQuotes) { result.push(current.replace(/^"|"$/g, '').trim()); current = ''; } else { current += char; } } result.push(current.replace(/^"|"$/g, '').trim()); return result; }
     function getManagerIcon(name) { if (!name || name === 'Não definido') return ''; const getInitials = (fullName) => { const names = fullName.split(' '); if (names.length === 1) return names[0].substring(0, 2).toUpperCase(); return (names[0][0] + names[names.length - 1][0]).toUpperCase(); }; const generateColor = (str) => { let hash = 0; for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); } const h = hash % 360; return `hsl(${h}, 60%, 45%)`; }; const initials = getInitials(name); const color = generateColor(name); return `<div class="manager-icon" style="background-color: ${color};" title="${name}">${initials}</div>`; }
     function generateStatusClass(status) { if (!status) return ''; const normalizedStatus = status.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); return `status-${normalizedStatus.replace(/\s+/g, '-')}`; }
     
+    // --- Lógica de UI ---
     function setupDropdowns() {
         [managerFilterBtn, statusFilterBtn].forEach(btn => {
             if(btn) btn.addEventListener('click', (event) => {
@@ -57,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         container.classList.toggle('edit-mode-active');
         if (isEditMode) {
             editModeBtn.textContent = 'Sair do Modo de Edição';
-            const saveBtn = document.createElement('a'); // MUDANÇA: Criamos um link <a>
+            const saveBtn = document.createElement('a');
             saveBtn.id = 'save-changes-btn';
             saveBtn.textContent = 'Salvar Alterações';
             saveBtn.href = "#";
@@ -192,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statuses.forEach(s => createCheckbox(s, 'status', statusFilterPanel));
         years.forEach(y => createCheckbox(y, 'year', yearFilterOptionsContainer));
         document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => { checkbox.addEventListener('change', applyFilters); });
-        const adjustWidth = (panel, button) => { if(panel && button) { panel.style.display = 'block'; panel.style.visibility = 'hidden'; panel.style.position = 'absolute'; const panelWidth = panel.scrollWidth; button.style.width = `${panelWidth + 30}px`; panel.style.display = ''; panel.style.visibility = ''; panel.style.position = ''; } };
+        const adjustWidth = (panel, button) => { if(panel && button) { panel.style.display = 'block'; panel.style.visibility = 'hidden'; panel.style.position = 'absolute'; const panelWidth = panel.scrollWidth; button.style.width = `${panelWidth + 35}px`; panel.style.display = ''; panel.style.visibility = ''; panel.style.position = ''; } };
         adjustWidth(managerFilterPanel, managerFilterBtn);
         adjustWidth(statusFilterPanel, statusFilterBtn);
     }
@@ -225,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function renderTimelineView(projectsToRender) {
         timelineContainer.innerHTML = '';
-        let validProjects = projectsToRender.filter(p => p.startDate && p.endDate && !isNaN(p.startDate.getTime()));
+        let validProjects = projectsToRender.filter(p => p.startDate && !isNaN(p.startDate.getTime()));
         if (sortByDateCheckbox.checked && !groupByManagerCheckbox.checked) {
             validProjects.sort((a, b) => a.startDate - b.startDate);
         }
@@ -257,7 +261,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const timelineGridTotalWidth = totalDays * PIXELS_PER_DAY;
         const drawProjectRow = (project, rowIndex) => {
             let rowHtml = '';
-            if (project.endDate >= minDate && project.startDate <= maxDate) {
+            // A data de fim agora é garantida, então podemos verificar a data de início contra o fim do período
+            if (project.startDate <= maxDate && project.endDate >= minDate) {
                 const daysSinceStart = Math.floor((project.startDate - minDate) / (1000 * 60 * 60 * 24));
                 const durationInDays = Math.ceil((project.endDate - project.startDate) / (1000 * 60 * 60 * 24)) + 1;
                 const leftInPixels = daysSinceStart * PIXELS_PER_DAY;
@@ -336,10 +341,16 @@ document.addEventListener('DOMContentLoaded', () => {
             allProjects = lines.slice(1).filter(line => line.trim() !== '').map(line => {
                 const data = parseCsvLine(line);
                 if (data.length < headers.length) return null;
-                const startDate = parseBrazilianDate(data[indices.startDate]);
-                const endDate = parseBrazilianDate(data[indices.endDate]);
+                
+                let startDate = parseBrazilianDate(data[indices.startDate]);
+                let endDate = parseBrazilianDate(data[indices.endDate]);
+
+                if (startDate && !endDate) {
+                    endDate = new Date(startDate);
+                }
+
                 return { name: data[indices.name] || '', description: data[indices.desc] || '', impact: parseInt(data[indices.impact], 10) || 0, effort: parseInt(data[indices.effort], 10) || 0, complexity: data[indices.complexity] || 'Não definida', startDate: startDate, endDate: endDate, manager: data[indices.manager] || 'Não definido', status: data[indices.status] || 'Não definida', ano: data[indices.ano] || '' };
-            }).filter(project => project !== null);
+            }).filter(project => project !== null && project.startDate);
             originalProjects = JSON.parse(JSON.stringify(allProjects));
             if (allProjects.length > 0) {
                 populateFilters();

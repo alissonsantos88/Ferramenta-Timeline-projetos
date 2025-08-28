@@ -7,20 +7,7 @@ header p { color: #6c757d; }
 
 /* --- Estilos do Modo de Edição --- */
 .main-actions-container { text-align: right; margin-bottom: 15px; min-height: 35px; }
-
-/* MUDANÇA AQUI: Aplicamos estilos tanto a 'button' quanto a 'a' (link) com estes IDs */
-#edit-mode-btn, #save-changes-btn {
-    display: inline-block;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s;
-    text-decoration: none; /* Garante que não há sublinhado no link */
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-}
+#edit-mode-btn, #save-changes-btn { display: inline-block; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: background-color 0.3s; text-decoration: none; font-family: Arial, sans-serif; font-size: 14px; }
 #edit-mode-btn { background-color: #ffc107; color: #333; }
 #save-changes-btn { background-color: #28a745; color: white; margin-left: 10px; }
 .edit-mode-active .timeline-container { border: 2px dashed #ffc107; }
@@ -50,7 +37,7 @@ header p { color: #6c757d; }
 
 /* --- Estilos para Filtros Múltiplos (Checkboxes) --- */
 .filter-dropdown { position: relative; display: inline-block; }
-.dropdown-btn { background-color: white; text-align: left; }
+.dropdown-btn { background-color: white; text-align: left; min-width: 120px; }
 .dropdown-btn::after { content: ' ▼'; float: right; font-size: 10px; margin-left: 10px; }
 .dropdown-panel { display: none; position: absolute; background-color: #f9f9f9; min-width: 100%; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); border: 1px solid #ddd; border-radius: 4px; z-index: 10; max-height: 200px; overflow-y: auto; }
 .dropdown-panel.show { display: block; }
