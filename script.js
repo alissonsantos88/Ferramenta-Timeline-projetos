@@ -87,6 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
             interact('.timeline-row').unset();
             interact('.bar-element').unset();
             interact('.timeline-group-header').unset();
+            interact('.unscheduled-item').unset();
+            interact('.timeline-grid').unset();
             allProjects = JSON.parse(JSON.stringify(originalProjects)).map(project => {
                 project.startDate = project.startDate ? new Date(project.startDate) : null;
                 project.endDate = project.endDate ? new Date(project.endDate) : null;
@@ -185,9 +187,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateFilters() {
-        const managers = [...new Set(allProjects.map(p => p.manager).filter(Boolean))].sort();
-        const statuses = [...new Set(allProjects.map(p => p.status).filter(Boolean))].sort();
-        const years = [...new Set(allProjects.map(p => p.ano).filter(Boolean))].sort((a, b) => b - a);
+        const managers = [...new Set(originalProjects.map(p => p.manager).filter(Boolean))].sort();
+        const statuses = [...new Set(originalProjects.map(p => p.status).filter(Boolean))].sort();
+        const years = [...new Set(originalProjects.map(p => p.ano).filter(Boolean))].sort((a, b) => b - a);
         managerFilterPanel.innerHTML = ''; statusFilterPanel.innerHTML = ''; yearFilterOptionsContainer.innerHTML = '';
         const createCheckbox = (value, name, panel) => { const label = document.createElement('label'); const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.name = name; checkbox.value = value; label.appendChild(checkbox); label.appendChild(document.createTextNode(` ${value}`)); panel.appendChild(label); };
         managers.forEach(m => createCheckbox(m, 'manager', managerFilterPanel));
@@ -209,13 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedManagers.length > 0) { const lowerSelectedManagers = selectedManagers.map(m => m.trim().toLowerCase()); filteredProjects = filteredProjects.filter(p => p.manager && lowerSelectedManagers.includes(p.manager.trim().toLowerCase())); }
         if (selectedStatuses.length > 0) { const lowerSelectedStatuses = selectedStatuses.map(s => s.trim().toLowerCase()); filteredProjects = filteredProjects.filter(p => p.status && lowerSelectedStatuses.includes(p.status.trim().toLowerCase())); }
         if (selectedYears.length > 0) { filteredProjects = filteredProjects.filter(p => p.ano && selectedYears.includes(p.ano.trim())); }
-        if (isEditMode) {
-            const statusesToHide = ['concluido', 'fechado', 'cancelado', 'concluidos', 'fechados', 'cancelados'];
-            filteredProjects = filteredProjects.filter(p => {
-                const projectStatus = generateStatusClass(p.status).replace('status-', '');
-                return !statusesToHide.includes(projectStatus);
-            });
-        }
         return filteredProjects;
     }
 
@@ -226,34 +221,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function renderTimelineView(projectsToRender) {
-        const statusesForUnscheduled = ['BACKLOG', 'PRIORIZADOS'];
-        const projectsForTimeline = projectsToRender.filter(p => p.startDate);
-        const unscheduledProjects = projectsToRender.filter(p => !p.startDate && p.status && statusesForUnscheduled.includes(p.status.toUpperCase()));
-        
         timelineContainer.innerHTML = '';
-        let validProjects = projectsForTimeline.filter(p => p.endDate && !isNaN(new Date(p.startDate).getTime()));
-        
         const isGroupingEnabled = groupByManagerCheckbox.checked;
-
+        
+        let validProjects = projectsToRender.filter(p => p.startDate && !isNaN(new Date(p.startDate).getTime()));
+        
         if (sortByDateCheckbox.checked && !isGroupingEnabled) {
             validProjects.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
         }
         
         if (validProjects.length === 0) {
             timelineContainer.innerHTML = '<p style="color: #333;">Nenhum projeto agendado encontrado com os filtros selecionados.</p>';
-            const allDatedProjects = allProjects.filter(p => p.startDate);
-            minDate = allDatedProjects.length > 0 ? new Date(Math.min(...allDatedProjects.map(p => new Date(p.startDate)))) : new Date();
-        } else {
-            minDate = new Date(Math.min(...validProjects.map(p => new Date(p.startDate))));
-            maxDate = new Date(Math.max(...validProjects.map(p => new Date(p.endDate))));
+            return;
         }
+        
+        minDate = new Date(Math.min(...validProjects.map(p => new Date(p.startDate))));
+        maxDate = new Date(Math.max(...validProjects.map(p => new Date(p.endDate))));
 
         if (filterStartDate.value && filterEndDate.value) {
             minDate = new Date(filterStartDate.value + 'T00:00:00');
             maxDate = new Date(filterEndDate.value + 'T23:59:59');
-        } else if (!maxDate) {
-             maxDate = new Date(minDate);
-             maxDate.setMonth(maxDate.getMonth() + 6);
         }
         minDate.setDate(1);
 
@@ -331,22 +318,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (gridContainer) { gridContainer.appendChild(marker); }
         }
         
-        unscheduledContainer.innerHTML = '';
-        if (unscheduledProjects.length > 0 && !isGroupingEnabled) {
-            let unscheduledHtml = '<h3>Projetos Não Agendados (Backlog / Priorizados)</h3><ul>';
-            unscheduledProjects.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
-                unscheduledHtml += `<li class="unscheduled-item" data-project-name="${p.name}"><strong>${p.name}</strong> (Responsável: ${p.manager || 'N/D'}, Status: ${p.status})</li>`;
-            });
-            unscheduledHtml += '</ul>';
-            unscheduledContainer.innerHTML = unscheduledHtml;
-        }
-        
         if (isEditMode) {
             setTimeout(setupInteractions, 0);
         }
     }
     
-    document.querySelectorAll('input[type="date"]').forEach(input => {
+    document.querySelectorAll('input[type="date"], input[type="checkbox"]').forEach(input => {
         input.addEventListener('change', applyFilters);
     });
     clearFiltersBtn.addEventListener('click', () => {
@@ -372,13 +349,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.length < headers.length) return null;
                 let startDate = parseBrazilianDate(data[indices.startDate]);
                 let endDate = parseBrazilianDate(data[indices.endDate]);
+                const status = (data[indices.status] || '').toUpperCase();
+
+                if (!startDate && (status === 'BACKLOG' || status === 'PRIORIZADOS')) {
+                    startDate = new Date();
+                    startDate.setHours(0, 0, 0, 0);
+                }
+
                 if (startDate && !endDate) {
                     endDate = new Date(startDate);
                 }
-                if (!startDate) {
-                    console.warn(`Aviso: O projeto "${data[indices.name] || 'Nome não encontrado'}" foi ignorado por não ter uma data de início válida.`);
-                }
-                return { name: data[indices.name] || '', description: data[indices.desc] || '', impact: parseInt(data[indices.impact], 10) || 0, effort: parseInt(data[indices.effort], 10) || 0, complexity: data[indices.complexity] || 'Não definida', startDate: startDate, endDate: endDate, manager: data[indices.manager] || 'Não definido', status: data[indices.status] || 'Não definida', ano: data[indices.ano] || '' };
+                return { name: data[indices.name] || '', description: data[indices.desc] || '', impact: parseInt(data[indices.impact], 10) || 0, effort: parseInt(data[indices.effort], 10) || 0, complexity: data[indices.complexity] || 'Não definida', startDate: startDate, endDate: endDate, manager: data[indices.manager] || 'Não definido', status: data[indices.status] || '', ano: data[indices.ano] || '' };
             }).filter(project => project !== null);
             originalProjects = JSON.parse(JSON.stringify(allProjects));
             if (allProjects.length > 0) {
