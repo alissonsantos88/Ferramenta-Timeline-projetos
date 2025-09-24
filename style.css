@@ -1,42 +1,53 @@
 /* Estilos Gerais */
-body { font-family: Arial, sans-serif; background-color: #0A2240; color: #333; line-height: 1.6; margin: 0; padding: 20px; }
-.container { max-width: 95%; margin: 0 auto; padding: 20px 40px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); color: #333; }
-header { text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; position: relative; }
-h1 { color: #0056b3; } /* Título principal */
-header h1 { margin-bottom: 0.5em; } /* Reduz a margem do H1 */
-header p { display: none; } /* Oculta permanentemente o parágrafo do subtítulo */
-
-/* --- NOVO: Estilos para o invólucro dos botões --- */
-.top-buttons-wrapper {
-    display: flex;
-    justify-content: space-between; /* Empurra os itens para as extremidades */
-    align-items: center; /* Alinha verticalmente ao centro */
-    margin-bottom: 15px;
-}
-/* Remove margens antigas que já não são necessárias */
-.main-actions-container, .toggle-filters-container {
-    margin-bottom: 0;
+body {
+    font-family: Arial, sans-serif;
+    /* MUDANÇA: Cor de fundo de fallback, caso a imagem não carregue */
+    background-color: #0A2240; 
+    color: #333;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    
+    /* NOVO: Imagem de fundo */
+    
+    background-image: url('images/fundo-navios.jpg');
+    background-size: cover; /* Faz a imagem cobrir toda a tela */
+    background-position: center; /* Centra a imagem */
+    background-attachment: fixed; /* Mantém a imagem fixa durante o scroll */
 }
 
-/* --- Estilos do Modo de Edição --- */
-.main-actions-container { min-height: 35px; }
-#edit-mode-btn, #save-changes-btn { display: inline-block; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: background-color 0.3s; text-decoration: none; font-family: Arial, sans-serif; font-size: 14px; }
-#edit-mode-btn { background-color: #ffc107; color: #333; }
+.container {
+    max-width: 97%;
+    margin: 0 auto;
+    padding: 20px 40px;
+    /* MUDANÇA: Fundo branco com 97% de opacidade */
+    background-color: rgba(182, 183, 189, 0.8   ); 
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    color: #4d0404;
+}
+
+header { text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 5px; position: relative; }
+h1, h2 { color: #f5f7f8; }
+header p { color: #6c757d; }
+
+/* O resto do código CSS permanece o mesmo... */
+.main-actions-container { text-align: right; margin-bottom: 15px; min-height: 35px; }
+#edit-mode-btn, #save-changes-btn {
+    display: inline-block; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: background-color 0.3s;
+    text-decoration: none; font-family: Arial, sans-serif; font-size: 14px;
+}
+#edit-mode-btn { background-color: #b18503; color: #f5f2f2; }
 #save-changes-btn { background-color: #28a745; color: white; margin-left: 10px; }
 .edit-mode-active .timeline-container { border: 2px dashed #ffc107; }
-.edit-mode-active .timeline-row, .edit-mode-active .unscheduled-item { cursor: grab; }
+.edit-mode-active .timeline-row { cursor: grab; }
 .edit-mode-active .bar-element { border-left: 3px solid rgba(255, 255, 255, 0.5); border-right: 3px solid rgba(255, 255, 255, 0.5); }
 .drop-active { border: 2px dashed #007bff !important; background-color: #eef5ff; }
 .drop-enter { background-color: #cce5ff; }
-.unscheduled-item.is-dragging { opacity: 0.5; background-color: #cce5ff; font-weight: bold; }
-.timeline-grid.drop-active { background-color: rgba(13, 110, 253, 0.1); }
-
-/* --- Estilos do Painel de Filtros Retrátil --- */
+.toggle-filters-container { text-align: right; margin-bottom: 15px; }
 #toggle-filters-btn { background-color: #f8f9fa; color: #333; border: 1px solid #ddd; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 12px; }
 #all-filters-panel { display: none; padding-bottom: 20px; }
 #all-filters-panel.show { display: block; }
-
-/* O resto do CSS não sofre alterações significativas */
 .filter-container, .year-filter-container { background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
 .filter-container { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
 .year-filter-container { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
