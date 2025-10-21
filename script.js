@@ -22,11 +22,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleFiltersBtn = document.getElementById('toggle-filters-btn');
     const allFiltersPanel = document.getElementById('all-filters-panel');
 
+    const viewToggleBtn = document.getElementById('view-toggle-btn');
+    const timelineView = document.getElementById('timeline-view');
+    const listViewContainer = document.getElementById('list-view-container');
+
     let allProjects = [];
     let originalProjects = [];
     let isEditMode = false;
     let minDate, maxDate;
     let isInitialLoad = true;
+    let currentView = 'timeline';
     const PIXELS_PER_DAY = 3;
 
     function parseBrazilianDate(dateStr) { if (!dateStr || typeof dateStr !== 'string') return null; const parts = dateStr.split('/'); if (parts.length !== 3) return null; const day = parseInt(parts[0], 10); const month = parseInt(parts[1], 10) - 1; const year = parseInt(parts[2], 10); if (isNaN(day) || isNaN(month) || isNaN(year)) return null; const date = new Date(year, month, day); if (date.getFullYear() !== year || date.getMonth() !== month || date.getDate() !== day) { return null; } return date; }
@@ -34,6 +39,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function getManagerIcon(name) { if (!name || name === 'Não definido') return ''; const getInitials = (fullName) => { const names = fullName.split(' '); if (names.length === 1) return names[0].substring(0, 2).toUpperCase(); return (names[0][0] + names[names.length - 1][0]).toUpperCase(); }; const generateColor = (str) => { let hash = 0; for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); } const h = hash % 360; return `hsl(${h}, 60%, 45%)`; }; const initials = getInitials(name); const color = generateColor(name); return `<div class="manager-icon" style="background-color: ${color};" title="${name}">${initials}</div>`; }
     function generateStatusClass(status) { if (!status) return ''; const normalizedStatus = status.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); return `status-${normalizedStatus.replace(/\s+/g, '-')}`; }
     
+    // NOVA FUNÇÃO AJUDANTE PARA FORMATAR DATAS
+    function formatSimpleDate(date) {
+        if (!date || !date instanceof Date || isNaN(date)) return 'N/D';
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
     function setupDropdowns() {
         [managerFilterBtn, statusFilterBtn].forEach(btn => {
             if(btn) btn.addEventListener('click', (event) => {
@@ -59,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isEditMode = !isEditMode;
         container.classList.toggle('edit-mode-active');
         if (isEditMode) {
-            editModeBtn.textContent = 'Sair do Modo de Edição';
+            editModeBtn.textContent = 'Sair da Priorização'; // TEXTO ATUALIZADO
             const saveBtn = document.createElement('a');
             saveBtn.id = 'save-changes-btn';
             saveBtn.textContent = 'Salvar Alterações';
@@ -82,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveBtn.href = `mailto:${emailTo}?subject=${subject}&body=${encodedBody}`;
             });
         } else {
-            editModeBtn.textContent = 'Entrar em Modo de Edição';
+            editModeBtn.textContent = 'Priorização'; // TEXTO ATUALIZADO
             const saveBtn = document.getElementById('save-changes-btn');
             if (saveBtn) saveBtn.remove();
             interact('.timeline-row').unset();
@@ -97,6 +111,27 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         applyFilters();
+    });
+
+    viewToggleBtn.addEventListener('click', () => {
+        if (currentView === 'timeline') {
+            currentView = 'list';
+            viewToggleBtn.textContent = 'Visualizar Cronograma';
+            viewToggleBtn.classList.add('active'); 
+            timelineView.style.display = 'none';
+            unscheduledContainer.style.display = 'none';
+            listViewContainer.style.display = 'block';
+            editModeBtn.style.display = 'none'; 
+        } else {
+            currentView = 'timeline';
+            viewToggleBtn.textContent = 'Visualizar em Lista';
+            viewToggleBtn.classList.remove('active');
+            timelineView.style.display = 'block';
+            unscheduledContainer.style.display = 'block';
+            listViewContainer.style.display = 'none';
+            editModeBtn.style.display = 'inline-block'; 
+        }
+        applyFilters(); 
     });
 
     function findChanges() {
@@ -137,9 +172,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         project.startDate.setDate(project.startDate.getDate() + dayChange);
                         project.endDate.setDate(project.endDate.getDate() + dayChange);
                     }
-                    const scrollLeft = timelineContainer.scrollLeft;
-                    renderTimelineView(getCurrentlyFilteredProjects());
-                    timelineContainer.scrollLeft = scrollLeft;
+                    const { scheduled, unscheduled } = getCurrentlyFilteredProjects();
+                    renderTimelineView(scheduled, unscheduled);
                 }
             }
         });
@@ -159,9 +193,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     project.startDate.setDate(project.startDate.getDate() + dayChange);
                     project.endDate = new Date(project.startDate);
                     project.endDate.setDate(project.endDate.getDate() + newDurationInDays - 1);
-                    const scrollLeft = timelineContainer.scrollLeft;
-                    renderTimelineView(getCurrentlyFilteredProjects());
-                    timelineContainer.scrollLeft = scrollLeft;
+                    const { scheduled, unscheduled } = getCurrentlyFilteredProjects();
+                    renderTimelineView(scheduled, unscheduled);
                 }
             }
         });
@@ -179,7 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const project = allProjects.find(p => p.name === projectName);
                     if (project && project.manager !== newManager) {
                         project.manager = newManager;
-                        renderTimelineView(getCurrentlyFilteredProjects());
+                        const { scheduled, unscheduled } = getCurrentlyFilteredProjects();
+                        renderTimelineView(scheduled, unscheduled);
                     }
                 },
                 ondropdeactivate(event) { document.querySelectorAll('.timeline-group-header').forEach(el => { el.classList.remove('drop-active'); el.classList.remove('drop-enter'); }); }
@@ -240,37 +274,55 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedManagers = Array.from(document.querySelectorAll('input[name="manager"]:checked')).map(cb => cb.value);
         const selectedStatuses = Array.from(document.querySelectorAll('input[name="status"]:checked')).map(cb => cb.value);
         const selectedYears = Array.from(document.querySelectorAll('input[name="year"]:checked')).map(cb => cb.value);
+        
         let filteredProjects = allProjects;
-        if (startDateValue && endDateValue) { const startDate = new Date(startDateValue + 'T00:00:00'); const endDate = new Date(endDateValue + 'T23:59:59'); filteredProjects = filteredProjects.filter(p => p.startDate && p.endDate && new Date(p.endDate) >= startDate && new Date(p.startDate) <= endDate); }
+
         if (selectedManagers.length > 0) { const lowerSelectedManagers = selectedManagers.map(m => m.trim().toLowerCase()); filteredProjects = filteredProjects.filter(p => p.manager && lowerSelectedManagers.includes(p.manager.trim().toLowerCase())); }
         if (selectedStatuses.length > 0) { const lowerSelectedStatuses = selectedStatuses.map(s => s.trim().toLowerCase()); filteredProjects = filteredProjects.filter(p => p.status && lowerSelectedStatuses.includes(p.status.trim().toLowerCase())); }
         if (selectedYears.length > 0) { filteredProjects = filteredProjects.filter(p => p.ano && selectedYears.includes(p.ano.trim())); }
-        return filteredProjects;
+        
+        let projectsForTimeline = filteredProjects.filter(p => p.startDate);
+        let unscheduled = filteredProjects.filter(p => !p.startDate);
+
+        if (startDateValue && endDateValue) {
+            const startDate = new Date(startDateValue + 'T00:00:00');
+            const endDate = new Date(endDateValue + 'T23:59:59');
+            projectsForTimeline = projectsForTimeline.filter(p => p.endDate && new Date(p.endDate) >= startDate && new Date(p.startDate) <= endDate);
+        }
+        
+        return {
+            scheduled: projectsForTimeline,
+            unscheduled: unscheduled
+        };
     }
 
     function applyFilters() {
-        const projectsToDisplay = getCurrentlyFilteredProjects();
-        renderTimelineView(projectsToDisplay);
+        isInitialLoad = false; 
+        const { scheduled, unscheduled } = getCurrentlyFilteredProjects();
+        
+        if (currentView === 'timeline') {
+            renderTimelineView(scheduled, unscheduled);
+        } else {
+            renderListView(scheduled, unscheduled);
+        }
         closeAllDropdowns();
     }
     
-    function renderTimelineView(projectsToRender) {
+    function renderTimelineView(projectsForTimeline, unscheduledProjects) {
         const isGroupingEnabled = groupByManagerCheckbox.checked;
-        const statusesForUnscheduled = ['BACKLOG', 'PRIORIZADOS'];
         
-        let projectsForTimeline = projectsToRender.filter(p => p.startDate);
-        const unscheduledProjects = projectsToRender.filter(p => !p.startDate && p.status && statusesForUnscheduled.includes(p.status.toUpperCase()));
-
+        timelineContainer.innerHTML = '';
+        unscheduledContainer.innerHTML = ''; 
+        
+        let validProjects = projectsForTimeline.filter(p => p.endDate && !isNaN(new Date(p.startDate).getTime()));
+        
         if (isEditMode) {
             const statusesToHide = ['concluido', 'fechado', 'cancelado', 'concluidos', 'fechados', 'cancelados'];
-            projectsForTimeline = projectsForTimeline.filter(p => {
+            validProjects = validProjects.filter(p => {
                 const projectStatus = generateStatusClass(p.status).replace('status-', '');
                 return !statusesToHide.includes(projectStatus);
             });
         }
-        
-        timelineContainer.innerHTML = '';
-        let validProjects = projectsForTimeline.filter(p => p.endDate && !isNaN(new Date(p.startDate).getTime()));
         
         if (sortByDateCheckbox.checked && !isGroupingEnabled) {
             validProjects.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
@@ -278,8 +330,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (validProjects.length === 0) {
             timelineContainer.innerHTML = '<p style="color: #333;">Nenhum projeto agendado encontrado com os filtros selecionados.</p>';
-            minDate = allProjects.length > 0 ? new Date(Math.min(...allProjects.filter(p=>p.startDate).map(p => new Date(p.startDate)))) : new Date();
-            maxDate = allProjects.length > 0 ? new Date(Math.max(...allProjects.filter(p=>p.endDate).map(p => new Date(p.endDate)))) : new Date();
+            const allDatedProjects = allProjects.filter(p => p.startDate);
+            minDate = allDatedProjects.length > 0 ? new Date(Math.min(...allDatedProjects.map(p => new Date(p.startDate)))) : new Date();
+            maxDate = new Date(minDate);
+            maxDate.setMonth(maxDate.getMonth() + 6);
         } else {
             minDate = new Date(Math.min(...validProjects.map(p => new Date(p.startDate))));
             maxDate = new Date(Math.max(...validProjects.map(p => new Date(p.endDate))));
@@ -288,9 +342,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (filterStartDate.value && filterEndDate.value) {
             minDate = new Date(filterStartDate.value + 'T00:00:00');
             maxDate = new Date(filterEndDate.value + 'T23:59:59');
-        } else if (validProjects.length === 0) {
-            maxDate = new Date(minDate);
-            maxDate.setMonth(maxDate.getMonth() + 6);
         }
         minDate.setDate(1);
 
@@ -368,10 +419,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (gridContainer) { gridContainer.appendChild(marker); }
         }
         
-        unscheduledContainer.innerHTML = '';
-        if (unscheduledProjects.length > 0 && !isGroupingEnabled) {
+        const statusesForUnscheduled = ['BACKLOG', 'PRIORIZADOS'];
+        const displayableUnscheduled = unscheduledProjects.filter(p => p.status && statusesForUnscheduled.includes(p.status.toUpperCase()));
+        if (displayableUnscheduled.length > 0 && !isGroupingEnabled) {
             let unscheduledHtml = '<h3>Projetos Não Agendados (Backlog / Priorizados)</h3><ul>';
-            unscheduledProjects.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+            displayableUnscheduled.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
                 unscheduledHtml += `<li class="unscheduled-item" data-project-name="${p.name}"><strong>${p.name}</strong> (Responsável: ${p.manager || 'N/D'}, Status: ${p.status})</li>`;
             });
             unscheduledHtml += '</ul>';
@@ -394,6 +446,60 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // --- NOVA FUNÇÃO DE RENDERIZAÇÃO DE LISTA ---
+    function renderListView(projectsForTimeline, unscheduledProjects) {
+        timelineContainer.innerHTML = '';
+        unscheduledContainer.innerHTML = '';
+        
+        // Combina todos os projetos (agendados e não agendados)
+        const allFilteredProjects = [...projectsForTimeline, ...unscheduledProjects];
+        
+        if (allFilteredProjects.length === 0) {
+            listViewContainer.innerHTML = '<h2>Lista de Projetos</h2><p style="color: #f1f1f1;">Nenhum projeto encontrado com os filtros selecionados.</p>';
+            return;
+        }
+
+        // Ordena a lista: 1º por Status, 2º por Nome
+        allFilteredProjects.sort((a, b) => {
+            const statusA = a.status || 'Não definido';
+            const statusB = b.status || 'Não definido';
+            if (statusA !== statusB) {
+                return statusA.localeCompare(statusB);
+            }
+            return a.name.localeCompare(b.name);
+        });
+
+        let html = '<h2>Lista de Projetos</h2>';
+        html += `<table class="list-table">`;
+        html += `
+            <thead>
+                <tr>
+                    <th>Projeto</th>
+                    <th>Responsável</th>
+                    <th>Status</th>
+                    <th>Data de Início</th>
+                    <th>Data Fim</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+
+        allFilteredProjects.forEach(project => {
+            html += `
+                <tr>
+                    <td>${project.name}</td>
+                    <td>${project.manager || 'N/D'}</td>
+                    <td>${project.status || 'N/D'}</td>
+                    <td>${formatSimpleDate(project.startDate)}</td>
+                    <td>${formatSimpleDate(project.endDate)}</td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table>`;
+        listViewContainer.innerHTML = html;
+    }
+
     function applyDefaultFilters() {
         const defaultStatuses = ['Backlog', 'Priorizados', 'Stand by', 'Em andamento'];
         const lowerDefaultStatuses = defaultStatuses.map(s => s.toLowerCase());
@@ -404,7 +510,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkbox.checked = true;
             }
         });
-
         applyFilters();
     }
     
@@ -454,6 +559,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    document.querySelectorAll('input[type="date"], input[type="checkbox"]').forEach(input => {
+        input.addEventListener('change', applyFilters);
+    });
+    clearFiltersBtn.addEventListener('click', () => {
+        filterStartDate.value = ''; filterEndDate.value = '';
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        groupByManagerCheckbox.checked = false;
+        sortByDateCheckbox.checked = true;
+        applyFilters();
+    });
+
     setupDropdowns();
     loadProjectsFromSheet();
-});
+});     
